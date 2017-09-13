@@ -23,6 +23,7 @@ try:
 except ImportError:
     from urllib2 import urlopen, Request
 
+import requests
 
 def get_industry_classified(standard='sina'):
     """
@@ -148,16 +149,20 @@ def get_st_classified():
     return df
 
 
-def _get_detail(tag, retry_count=3, pause=0.001):
+def _get_detail(tag, retry_count=3, pause=1):
     for _ in range(retry_count):
         time.sleep(pause)
         try:
             # ct._write_console()
-            request = Request(ct.SINA_DATA_DETAIL_URL % (ct.P_TYPE['http'],
-                                                         ct.DOMAINS['vsf'], ct.PAGES['jv'],
-                                                         tag))
-            text = urlopen(request, timeout=10).read()
-            text = text.decode('gbk')
+            url = ct.SINA_DATA_DETAIL_URL % (ct.P_TYPE['http'],ct.DOMAINS['vsf'], ct.PAGES['jv'],tag)
+            #request = Request(ct.SINA_DATA_DETAIL_URL % (ct.P_TYPE['http'],
+            #                                             ct.DOMAINS['vsf'], ct.PAGES['jv'],
+            #                                             tag))
+            #text = urlopen(request, timeout=10).read()
+            #text = text.decode('gbk')
+            resp=requests.get(url)
+            resp.encoding="utf-8"
+            text=resp.text
         except _network_error_classes:
             pass
         else:
