@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 """
 获取股票分类数据接口 
 Created on 2015/02/01
@@ -17,6 +16,7 @@ from pandas.util.testing import _network_error_classes
 import time
 import tushare.stock.fundamental as fd
 from tushare.util.netbase import Client
+import traceback
 
 try:
     from urllib.request import urlopen, Request
@@ -24,6 +24,7 @@ except ImportError:
     from urllib2 import urlopen, Request
 
 import requests
+
 
 def get_industry_classified(standard='sina'):
     """
@@ -41,11 +42,13 @@ def get_industry_classified(standard='sina'):
         c_name :行业名称
     """
     if standard == 'sw':
-        df = _get_type_data(ct.SINA_INDUSTRY_INDEX_URL % (ct.P_TYPE['http'],
-                                                          ct.DOMAINS['vsf'], ct.PAGES['ids_sw']))
+        df = _get_type_data(ct.SINA_INDUSTRY_INDEX_URL %
+                            (ct.P_TYPE['http'], ct.DOMAINS['vsf'],
+                             ct.PAGES['ids_sw']))
     else:
-        df = _get_type_data(ct.SINA_INDUSTRY_INDEX_URL % (ct.P_TYPE['http'],
-                                                          ct.DOMAINS['vsf'], ct.PAGES['ids']))
+        df = _get_type_data(ct.SINA_INDUSTRY_INDEX_URL %
+                            (ct.P_TYPE['http'], ct.DOMAINS['vsf'],
+                             ct.PAGES['ids']))
     data = []
     ct._write_head()
     for row in df.values:
@@ -67,8 +70,8 @@ def get_concept_classified():
         c_name :概念名称
     """
     ct._write_head()
-    df = _get_type_data(ct.SINA_CONCEPTS_INDEX_URL % (ct.P_TYPE['http'],
-                                                      ct.DOMAINS['sf'], ct.PAGES['cpt']))
+    df = _get_type_data(ct.SINA_CONCEPTS_INDEX_URL %
+                        (ct.P_TYPE['http'], ct.DOMAINS['sf'], ct.PAGES['cpt']))
     data = []
     name_list = df.values
     for row in df.values:
@@ -153,43 +156,53 @@ def _get_detail(tag, retry_count=3, pause=1):
     for _ in range(retry_count):
         time.sleep(pause)
         try:
+            print("_get_detail")
             # ct._write_console()
-            url = ct.SINA_DATA_DETAIL_URL % (ct.P_TYPE['http'],ct.DOMAINS['vsf'], ct.PAGES['jv'],tag)
+            url = ct.SINA_DATA_DETAIL_URL % (ct.P_TYPE['http'],
+                                             ct.DOMAINS['vsf'], ct.PAGES['jv'],
+                                             tag)
             #request = Request(ct.SINA_DATA_DETAIL_URL % (ct.P_TYPE['http'],
             #                                             ct.DOMAINS['vsf'], ct.PAGES['jv'],
             #                                             tag))
             #text = urlopen(request, timeout=10).read()
             #text = text.decode('gbk')
-            resp=requests.get(url)
-            resp.encoding="utf-8"
-            text=resp.text
-        except:
-            pass
-        else:
+            resp = requests.get(url)
+            resp.encoding = "gbk"
+            text = resp.text
             reg = re.compile(r'\,(.*?)\:')
             text = reg.sub(r',"\1":', text)
             text = text.replace('"{symbol', '{"symbol')
             text = text.replace('{symbol', '{"symbol"')
             jstr = json.dumps(text)
             js = json.loads(jstr)
-            df = pd.DataFrame(pd.read_json(js, dtype={'code': object}), columns=ct.THE_FIELDS)
+            df = pd.DataFrame(
+                pd.read_json(js, dtype={
+                    'code': object
+                }),
+                columns=ct.THE_FIELDS)
             df = df[ct.FOR_CLASSIFY_B_COLS]
             return df
             # raise IOError(ct.NETWORK_URL_ERROR_MSG)
+        except:
+            pass
 
 
 def _get_type_data(url):
     try:
-        request = Request(url)
-        data_str = urlopen(request, timeout=10).read()
-        data_str = data_str.decode('GBK')
+        resp=requests.get(url)
+        resp.encoding='gbk'
+        #request = Request(url)
+        data_str = resp.text
+        #data_str = data_str.decode('GBK')
         data_str = data_str.split('=')[1]
         data_json = json.loads(data_str)
-        df = pd.DataFrame([[row.split(',')[0], row.split(',')[1]] for row in data_json.values()],
-                          columns=['tag', 'name'])
+        df = pd.DataFrame(
+            [[row.split(',')[0], row.split(',')[1]]
+             for row in data_json.values()],
+            columns=['tag', 'name'])
         return df
     except Exception as er:
-        print(str(er))
+        print(traceback.format_exec())
 
 
 def get_hs300s():
@@ -205,8 +218,10 @@ def get_hs300s():
     """
     from tushare.stock.fundamental import get_stock_basics
     try:
-        wt = pd.read_excel(ct.HS300_CLASSIFY_URL_FTP % (ct.P_TYPE['ftp'], ct.DOMAINS['idxip'],
-                                                        ct.PAGES['hs300w']), parse_cols=[0, 3, 6])
+        wt = pd.read_excel(
+            ct.HS300_CLASSIFY_URL_FTP % (ct.P_TYPE['ftp'], ct.DOMAINS['idxip'],
+                                         ct.PAGES['hs300w']),
+            parse_cols=[0, 3, 6])
         wt.columns = ct.FOR_CLASSIFY_W_COLS
         wt['code'] = wt['code'].map(lambda x: str(x).zfill(6))
         df = get_stock_basics()[['name']]
@@ -226,8 +241,10 @@ def get_sz50s():
         name :股票名称
     """
     try:
-        df = pd.read_excel(ct.HS300_CLASSIFY_URL_FTP % (ct.P_TYPE['ftp'], ct.DOMAINS['idxip'],
-                                                        ct.PAGES['sz50b']), parse_cols=[0, 1])
+        df = pd.read_excel(
+            ct.HS300_CLASSIFY_URL_FTP % (ct.P_TYPE['ftp'], ct.DOMAINS['idxip'],
+                                         ct.PAGES['sz50b']),
+            parse_cols=[0, 1])
         df.columns = ct.FOR_CLASSIFY_B_COLS
         df['code'] = df['code'].map(lambda x: str(x).zfill(6))
         return df
@@ -250,8 +267,10 @@ def get_zz500s():
         #                                                   ct.PAGES['zz500b']), parse_cols=[0,1])
         #         df.columns = ct.FOR_CLASSIFY_B_COLS
         #         df['code'] = df['code'].map(lambda x :str(x).zfill(6))
-        wt = pd.read_excel(ct.HS300_CLASSIFY_URL_FTP % (ct.P_TYPE['ftp'], ct.DOMAINS['idxip'],
-                                                        ct.PAGES['zz500wt']), parse_cols=[0, 3, 6])
+        wt = pd.read_excel(
+            ct.HS300_CLASSIFY_URL_FTP % (ct.P_TYPE['ftp'], ct.DOMAINS['idxip'],
+                                         ct.PAGES['zz500wt']),
+            parse_cols=[0, 3, 6])
         wt.columns = ct.FOR_CLASSIFY_W_COLS
         wt['code'] = wt['code'].map(lambda x: str(x).zfill(6))
         df = get_stock_basics()[['name']]
@@ -275,9 +294,11 @@ def get_terminated():
     try:
 
         ref = ct.SSEQ_CQ_REF_URL % (ct.P_TYPE['http'], ct.DOMAINS['sse'])
-        clt = Client(rv.TERMINATED_URL % (ct.P_TYPE['http'], ct.DOMAINS['sseq'],
-                                          ct.PAGES['ssecq'], _random(5),
-                                          _random()), ref=ref, cookie=rv.MAR_SH_COOKIESTR)
+        clt = Client(
+            rv.TERMINATED_URL % (ct.P_TYPE['http'], ct.DOMAINS['sseq'],
+                                 ct.PAGES['ssecq'], _random(5), _random()),
+            ref=ref,
+            cookie=rv.MAR_SH_COOKIESTR)
         lines = clt.gvalue()
         lines = lines.decode('utf-8') if ct.PY3 else lines
         lines = lines[19:-1]
@@ -303,9 +324,11 @@ def get_suspended():
     try:
 
         ref = ct.SSEQ_CQ_REF_URL % (ct.P_TYPE['http'], ct.DOMAINS['sse'])
-        clt = Client(rv.SUSPENDED_URL % (ct.P_TYPE['http'], ct.DOMAINS['sseq'],
-                                         ct.PAGES['ssecq'], _random(5),
-                                         _random()), ref=ref, cookie=rv.MAR_SH_COOKIESTR)
+        clt = Client(
+            rv.SUSPENDED_URL % (ct.P_TYPE['http'], ct.DOMAINS['sseq'],
+                                ct.PAGES['ssecq'], _random(5), _random()),
+            ref=ref,
+            cookie=rv.MAR_SH_COOKIESTR)
         lines = clt.gvalue()
         lines = lines.decode('utf-8') if ct.PY3 else lines
         lines = lines[19:-1]
@@ -319,6 +342,6 @@ def get_suspended():
 
 def _random(n=13):
     from random import randint
-    start = 10 ** (n - 1)
-    end = (10 ** n) - 1
+    start = 10**(n - 1)
+    end = (10**n) - 1
     return str(randint(start, end))

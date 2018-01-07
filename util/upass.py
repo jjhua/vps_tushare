@@ -1,5 +1,4 @@
-# -*- coding:utf-8 -*- 
-
+# -*- coding:utf-8 -*-
 """
 Created on 2015/08/24
 @author: Jimmy Liu
@@ -13,11 +12,12 @@ from tushare.stock import cons as ct
 
 BK = 'bk'
 
+
 def set_token(token):
     df = pd.DataFrame([token], columns=['token'])
     df.to_csv(ct.TOKEN_F_P, index=False)
-    
-    
+
+
 def get_token():
     if os.path.exists(ct.TOKEN_F_P):
         df = pd.read_csv(ct.TOKEN_F_P)
@@ -28,9 +28,10 @@ def get_token():
 
 
 def set_broker(broker='', user='', passwd=''):
-    df = pd.DataFrame([[broker, user, passwd]], 
-                      columns=['broker', 'user', 'passwd'],
-                      dtype=object)
+    df = pd.DataFrame(
+        [[broker, user, passwd]],
+        columns=['broker', 'user', 'passwd'],
+        dtype=object)
     if os.path.exists(BK):
         all = pd.read_csv(BK, dtype=object)
         if (all[all.broker == broker]['user']).any():
@@ -39,18 +40,18 @@ def set_broker(broker='', user='', passwd=''):
         all.to_csv(BK, index=False)
     else:
         df.to_csv(BK, index=False)
-        
-        
+
+
 def get_broker(broker=''):
     if os.path.exists(BK):
         df = pd.read_csv(BK, dtype=object)
         if broker == '':
             return df
         else:
-            return  df[df.broker == broker]
+            return df[df.broker == broker]
     else:
         return None
-    
-    
+
+
 def remove_broker():
     os.remove(BK)

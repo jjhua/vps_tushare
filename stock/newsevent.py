@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 """
 新闻事件数据接口 
 Created on 2015/02/07
@@ -22,7 +21,6 @@ except ImportError:
     from urllib2 import urlopen, Request
 
 
-
 def get_latest_news(top=None, show_content=False):
     """
         获取即时财经新闻
@@ -43,14 +41,16 @@ def get_latest_news(top=None, show_content=False):
     """
     top = ct.PAGE_NUM[2] if top is None else top
     try:
-        request = Request(nv.LATEST_URL % (ct.P_TYPE['http'], ct.DOMAINS['sina'],
-                                                   ct.PAGES['lnews'], top,
-                                                   _random()))
+        request = Request(nv.LATEST_URL %
+                          (ct.P_TYPE['http'], ct.DOMAINS['sina'],
+                           ct.PAGES['lnews'], top, _random()))
         data_str = urlopen(request, timeout=10).read()
         data_str = data_str.decode('GBK')
-        data_str = data_str[data_str.find("=")+1:-1]
-        data_str = eval(data_str, type('Dummy', (dict,), 
-                                       dict(__getitem__ = lambda s, n:n))())
+        data_str = data_str[data_str.find("=") + 1:-1]
+        data_str = eval(data_str,
+                        type(
+                            'Dummy', (dict, ),
+                            dict(__getitem__=lambda s, n: n))())
         data_str = json.dumps(data_str)
         data_str = json.loads(data_str)
         data_str = data_str['list']
@@ -62,7 +62,8 @@ def get_latest_news(top=None, show_content=False):
             if show_content:
                 arow.append(latest_content(r['url']))
             data.append(arow)
-        df = pd.DataFrame(data, columns=nv.LATEST_COLS_C if show_content else nv.LATEST_COLS)
+        df = pd.DataFrame(
+            data, columns=nv.LATEST_COLS_C if show_content else nv.LATEST_COLS)
         return df
     except Exception as er:
         print(str(er))
@@ -86,12 +87,12 @@ def latest_content(url):
             sarr = [etree.tostring(node).decode('utf-8') for node in res]
         else:
             sarr = [etree.tostring(node) for node in res]
-        sarr = ''.join(sarr).replace('&#12288;', '')#.replace('\n\n', '\n').
+        sarr = ''.join(sarr).replace('&#12288;', '')  #.replace('\n\n', '\n').
         html_content = lxml.html.fromstring(sarr)
         content = html_content.text_content()
         return content
     except Exception as er:
-        print(str(er))  
+        print(str(er))
 
 
 def get_notices(code=None, date=None):
@@ -113,9 +114,9 @@ def get_notices(code=None, date=None):
     if code is None:
         return None
     symbol = 'sh' + code if code[:1] == '6' else 'sz' + code
-    url = nv.NOTICE_INFO_URL%(ct.P_TYPE['http'], ct.DOMAINS['vsf'],
-                              ct.PAGES['ntinfo'], symbol)
-    url = url if date is None else '%s&gg_date=%s'%(url, date)
+    url = nv.NOTICE_INFO_URL % (ct.P_TYPE['http'], ct.DOMAINS['vsf'],
+                                ct.PAGES['ntinfo'], symbol)
+    url = url if date is None else '%s&gg_date=%s' % (url, date)
     html = lxml.html.parse(url)
     res = html.xpath('//table[@class=\"body_table\"]/tbody/tr')
     data = []
@@ -123,7 +124,8 @@ def get_notices(code=None, date=None):
         title = td.xpath('th/a/text()')[0]
         type = td.xpath('td[1]/text()')[0]
         date = td.xpath('td[2]/text()')[0]
-        url = '%s%s%s'%(ct.P_TYPE['http'], ct.DOMAINS['vsf'], td.xpath('th/a/@href')[0])
+        url = '%s%s%s' % (ct.P_TYPE['http'], ct.DOMAINS['vsf'],
+                          td.xpath('th/a/@href')[0])
         data.append([title, type, date, url])
     df = pd.DataFrame(data, columns=nv.NOTICE_INFO_CLS)
     return df
@@ -145,7 +147,7 @@ def notice_content(url):
         res = html.xpath('//div[@id=\"content\"]/pre/text()')[0]
         return res.strip()
     except Exception as er:
-        print(str(er))  
+        print(str(er))
 
 
 def guba_sina(show_content=False):
@@ -163,11 +165,11 @@ def guba_sina(show_content=False):
         ptime, 发布时间
         rcounts,阅读次数
     """
-    
+
     from pandas.io.common import urlopen
     try:
-        with urlopen(nv.GUBA_SINA_URL%(ct.P_TYPE['http'],
-                                       ct.DOMAINS['sina'])) as resp:
+        with urlopen(nv.GUBA_SINA_URL % (ct.P_TYPE['http'],
+                                         ct.DOMAINS['sina'])) as resp:
             lines = resp.read()
         html = lxml.html.document_fromstring(lines)
         res = html.xpath('//ul[@class=\"list_05\"]/li[not (@class)]')
@@ -189,9 +191,9 @@ def guba_sina(show_content=False):
         df['rcounts'] = df['rcounts'].astype(float)
         return df if show_content is True else df.drop('content', axis=1)
     except Exception as er:
-        print(str(er))  
-    
-    
+        print(str(er))
+
+
 def _guba_content(url):
     try:
         html = lxml.html.parse(url)
@@ -200,12 +202,14 @@ def _guba_content(url):
             sarr = [etree.tostring(node).decode('utf-8') for node in res]
         else:
             sarr = [etree.tostring(node) for node in res]
-        sarr = ''.join(sarr).replace('&#12288;', '')#.replace('\n\n', '\n').
+        sarr = ''.join(sarr).replace('&#12288;', '')  #.replace('\n\n', '\n').
         html_content = lxml.html.fromstring(sarr)
         content = html_content.text_content()
-        ptime = html.xpath('//div[@class=\"fl_left iltp_time\"]/span/text()')[0]
-        rcounts = html.xpath('//div[@class=\"fl_right iltp_span\"]/span[2]/text()')[0]
-        reg = re.compile(r'\((.*?)\)') 
+        ptime = html.xpath('//div[@class=\"fl_left iltp_time\"]/span/text()')[
+            0]
+        rcounts = html.xpath(
+            '//div[@class=\"fl_right iltp_span\"]/span[2]/text()')[0]
+        reg = re.compile(r'\((.*?)\)')
         rcounts = reg.findall(rcounts)[0]
         return [content, ptime, rcounts]
     except Exception:
@@ -214,7 +218,6 @@ def _guba_content(url):
 
 def _random(n=16):
     from random import randint
-    start = 10 ** (n - 1)
-    end = (10 ** n) - 1
+    start = 10**(n - 1)
+    end = (10**n) - 1
     return str(randint(start, end))
-

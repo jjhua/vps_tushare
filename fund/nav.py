@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 """
 获取基金净值数据接口 
 Created on 2016/04/03
@@ -53,20 +52,17 @@ def get_nav_open(fund_type='all'):
     """
     if ct._check_nav_oft_input(fund_type) is True:
         ct._write_head()
-        nums = _get_fund_num(ct.SINA_NAV_COUNT_URL %
-                             (ct.P_TYPE['http'], ct.DOMAINS['vsf'],
-                              ct.NAV_OPEN_KEY[fund_type],
-                              ct.NAV_OPEN_API[fund_type],
-                              ct.NAV_OPEN_T2[fund_type],
-                              ct.NAV_OPEN_T3))
+        nums = _get_fund_num(
+            ct.SINA_NAV_COUNT_URL %
+            (ct.P_TYPE['http'], ct.DOMAINS['vsf'], ct.NAV_OPEN_KEY[fund_type],
+             ct.NAV_OPEN_API[fund_type], ct.NAV_OPEN_T2[fund_type],
+             ct.NAV_OPEN_T3))
 
-        fund_df = _parse_fund_data(ct.SINA_NAV_DATA_URL %
-                                   (ct.P_TYPE['http'], ct.DOMAINS['vsf'],
-                                    ct.NAV_OPEN_KEY[fund_type],
-                                    ct.NAV_OPEN_API[fund_type],
-                                    nums,
-                                    ct.NAV_OPEN_T2[fund_type],
-                                    ct.NAV_OPEN_T3))
+        fund_df = _parse_fund_data(
+            ct.SINA_NAV_DATA_URL %
+            (ct.P_TYPE['http'], ct.DOMAINS['vsf'], ct.NAV_OPEN_KEY[fund_type],
+             ct.NAV_OPEN_API[fund_type], nums, ct.NAV_OPEN_T2[fund_type],
+             ct.NAV_OPEN_T3))
         return fund_df
 
 
@@ -123,8 +119,7 @@ def get_nav_close(fund_type='all', sub_type='all'):
                                (ct.P_TYPE['http'], ct.DOMAINS['vsf'],
                                 ct.NAV_OPEN_KEY, ct.NAV_CLOSE_API, nums,
                                 ct.NAV_CLOSE_T2[fund_type],
-                                ct.NAV_CLOSE_T3[sub_type]),
-                               'close')
+                                ct.NAV_CLOSE_T3[sub_type]), 'close')
     return fund_df
 
 
@@ -175,12 +170,16 @@ def get_nav_grading(fund_type='all', sub_type='all'):
                                (ct.P_TYPE['http'], ct.DOMAINS['vsf'],
                                 ct.NAV_GRADING_KEY, ct.NAV_GRADING_API, nums,
                                 ct.NAV_GRADING_T2[fund_type],
-                                ct.NAV_GRADING_T3[sub_type]),
-                               'grading')
+                                ct.NAV_GRADING_T3[sub_type]), 'grading')
     return fund_df
 
 
-def get_nav_history(code, start=None, end=None, retry_count=3, pause=0.001, timeout=10):
+def get_nav_history(code,
+                    start=None,
+                    end=None,
+                    retry_count=3,
+                    pause=0.001,
+                    timeout=10):
     '''
     获取历史净值数据
     Parameters
@@ -218,8 +217,8 @@ def get_nav_history(code, start=None, end=None, retry_count=3, pause=0.001, time
 
     ct._write_head()
     nums = _get_nav_histroy_num(code, start, end, ismonetary)
-    data = _parse_nav_history_data(
-        code, start, end, nums, ismonetary, retry_count, pause, timeout)
+    data = _parse_nav_history_data(code, start, end, nums, ismonetary,
+                                   retry_count, pause, timeout)
     return data
 
 
@@ -251,8 +250,8 @@ def get_fund_info(code):
           glr       基金管理人
           tgr       基金托管人
     '''
-    request = ct.SINA_FUND_INFO_URL % (
-        ct.P_TYPE['http'], ct.DOMAINS['ssf'], code)
+    request = ct.SINA_FUND_INFO_URL % (ct.P_TYPE['http'], ct.DOMAINS['ssf'],
+                                       code)
     text = urlopen(request, timeout=10).read()
     text = text.decode('gbk')
     org_js = json.loads(text)
@@ -289,8 +288,11 @@ def _parse_fund_data(url, fund_type='open'):
         else:
             jstr = json.dumps(text, encoding='gbk')
         org_js = json.loads(jstr)
-        fund_df = pd.DataFrame(pd.read_json(org_js, dtype={'symbol': object}),
-                               columns=ct.NAV_COLUMNS[fund_type])
+        fund_df = pd.DataFrame(
+            pd.read_json(org_js, dtype={
+                'symbol': object
+            }),
+            columns=ct.NAV_COLUMNS[fund_type])
         fund_df.fillna(0, inplace=True)
         return fund_df
     except Exception as er:
@@ -334,12 +336,12 @@ def _get_nav_histroy_num(code, start, end, ismonetary=False):
 
     if ismonetary:
         request = Request(ct.SINA_NAV_HISTROY_COUNT_CUR_URL %
-                          (ct.P_TYPE['http'], ct.DOMAINS['ssf'],
-                           code, start, end))
+                          (ct.P_TYPE['http'], ct.DOMAINS['ssf'], code, start,
+                           end))
     else:
         request = Request(ct.SINA_NAV_HISTROY_COUNT_URL %
-                          (ct.P_TYPE['http'], ct.DOMAINS['ssf'],
-                           code, start, end))
+                          (ct.P_TYPE['http'], ct.DOMAINS['ssf'], code, start,
+                           end))
 
     text = urlopen(request, timeout=10).read()
     text = text.decode('gbk')
@@ -353,7 +355,14 @@ def _get_nav_histroy_num(code, start, end, ismonetary=False):
     return int(nums)
 
 
-def _parse_nav_history_data(code, start, end, nums, ismonetary=False, retry_count=3, pause=0.01, timeout=10):
+def _parse_nav_history_data(code,
+                            start,
+                            end,
+                            nums,
+                            ismonetary=False,
+                            retry_count=3,
+                            pause=0.01,
+                            timeout=10):
     if nums == 0:
         return None
 
@@ -364,12 +373,12 @@ def _parse_nav_history_data(code, start, end, nums, ismonetary=False, retry_coun
 
         if ismonetary:
             request = Request(ct.SINA_NAV_HISTROY_DATA_CUR_URL %
-                              (ct.P_TYPE['http'], ct.DOMAINS['ssf'],
-                               code, start, end, nums))
+                              (ct.P_TYPE['http'], ct.DOMAINS['ssf'], code,
+                               start, end, nums))
         else:
             request = Request(ct.SINA_NAV_HISTROY_DATA_URL %
-                              (ct.P_TYPE['http'], ct.DOMAINS['ssf'],
-                               code, start, end, nums))
+                              (ct.P_TYPE['http'], ct.DOMAINS['ssf'], code,
+                               start, end, nums))
         text = urlopen(request, timeout=timeout).read()
         text = text.decode('gbk')
         org_js = json.loads(text)

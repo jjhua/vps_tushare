@@ -12,7 +12,6 @@ import os
 
 
 class Store(object):
-
     def __init__(self, data=None, name=None, path=None):
         if isinstance(data, pd.DataFrame):
             self.data = data
@@ -33,11 +32,10 @@ class Store(object):
             else:
                 try:
                     if os.path.exists(path) is False:
-                        os.mkdir(path) 
-                    file_path = file_path%(path, '/', name, to)
+                        os.mkdir(path)
+                    file_path = file_path % (path, '/', name, to)
                 except:
                     pass
-            
+
         else:
             print('input error')
-

@@ -5,11 +5,12 @@ import time
 import pandas as pd
 from tushare.stock import cons as ct
 
+
 def year_qua(date):
     mon = date[5:7]
     mon = int(mon)
-    return[date[0:4], _quar(mon)]
-    
+    return [date[0:4], _quar(mon)]
+
 
 def _quar(mon):
     if mon in [1, 2, 3]:
@@ -22,11 +23,11 @@ def _quar(mon):
         return '4'
     else:
         return None
- 
- 
+
+
 def today():
     day = datetime.datetime.today().date()
-    return str(day) 
+    return str(day)
 
 
 def get_year():
@@ -38,10 +39,11 @@ def get_month():
     month = datetime.datetime.today().month
     return month
 
+
 def get_hour():
     return datetime.datetime.today().hour
-    
-    
+
+
 def today_last_year():
     lasty = datetime.datetime.today().date() + datetime.timedelta(-365)
     return str(lasty)
@@ -70,8 +72,8 @@ def diff_day(start=None, end=None):
 
 
 def get_quarts(start, end):
-    idx = pd.period_range('Q'.join(year_qua(start)), 'Q'.join(year_qua(end)),
-                          freq='Q-JAN')
+    idx = pd.period_range(
+        'Q'.join(year_qua(start)), 'Q'.join(year_qua(end)), freq='Q-JAN')
     return [str(d).split('Q') for d in idx][::-1]
 
 
@@ -101,28 +103,27 @@ def is_holiday(date):
 
 def last_tddate():
     today = datetime.datetime.today().date()
-    today=int(today.strftime("%w"))
+    today = int(today.strftime("%w"))
     if today == 0:
         return day_last_week(-2)
     else:
         return day_last_week(-1)
-        
+
 
 def tt_dates(start='', end=''):
     startyear = int(start[0:4])
     endyear = int(end[0:4])
-    dates = [d for d in range(startyear, endyear+1, 2)]
+    dates = [d for d in range(startyear, endyear + 1, 2)]
     return dates
-    
-    
+
+
 def _random(n=13):
     from random import randint
-    start = 10**(n-1)
-    end = (10**n)-1
+    start = 10**(n - 1)
+    end = (10**n) - 1
     return str(randint(start, end))
+
 
 def get_q_date(year=None, quarter=None):
     dt = {'1': '-03-31', '2': '-06-30', '3': '-09-30', '4': '-12-31'}
-    return '%s%s'%(str(year), dt[str(quarter)])
-
-
+    return '%s%s' % (str(year), dt[str(quarter)])

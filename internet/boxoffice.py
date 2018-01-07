@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*- 
+# -*- coding:utf-8 -*-
 """
 电影票房 
 Created on 2015/12/24
@@ -16,7 +16,8 @@ except ImportError:
 import time
 import json
 
-def realtime_boxoffice(retry_count=3,pause=0.001):
+
+def realtime_boxoffice(retry_count=3, pause=0.001):
     """
     获取实时电影票房数据
     数据来源：EBOT艺恩票房智库
@@ -40,17 +41,18 @@ def realtime_boxoffice(retry_count=3,pause=0.001):
     for _ in range(retry_count):
         time.sleep(pause)
         try:
-            request = Request(ct.MOVIE_BOX%(ct.P_TYPE['http'], ct.DOMAINS['mbox'],
-                              ct.BOX, _random()))
-            lines = urlopen(request, timeout = 10).read()
-            if len(lines) < 15: #no data
+            request = Request(ct.MOVIE_BOX % (ct.P_TYPE['http'],
+                                              ct.DOMAINS['mbox'], ct.BOX,
+                                              _random()))
+            lines = urlopen(request, timeout=10).read()
+            if len(lines) < 15:  #no data
                 return None
         except Exception as e:
             print(e)
         else:
             js = json.loads(lines.decode('utf-8') if ct.PY3 else lines)
             df = pd.DataFrame(js['data2'])
-            df = df.drop(['MovieImg','mId'], axis=1)
+            df = df.drop(['MovieImg', 'mId'], axis=1)
             df['time'] = du.get_now()
             return df
 
@@ -86,18 +88,21 @@ def day_boxoffice(date=None, retry_count=3, pause=0.001):
                 date = 0
             else:
                 date = int(du.diff_day(du.today(), date)) + 1
-                
-            request = Request(ct.BOXOFFICE_DAY%(ct.P_TYPE['http'], ct.DOMAINS['mbox'],
-                              ct.BOX, date, _random()))
-            lines = urlopen(request, timeout = 10).read()
-            if len(lines) < 15: #no data
+
+            request = Request(ct.BOXOFFICE_DAY %
+                              (ct.P_TYPE['http'], ct.DOMAINS['mbox'], ct.BOX,
+                               date, _random()))
+            lines = urlopen(request, timeout=10).read()
+            if len(lines) < 15:  #no data
                 return None
         except Exception as e:
             print(e)
         else:
             js = json.loads(lines.decode('utf-8') if ct.PY3 else lines)
             df = pd.DataFrame(js['data1'])
-            df = df.drop(['MovieImg', 'BoxOffice1', 'MovieID', 'Director', 'IRank_pro'], axis=1)
+            df = df.drop(
+                ['MovieImg', 'BoxOffice1', 'MovieID', 'Director', 'IRank_pro'],
+                axis=1)
             return df
 
 
@@ -126,18 +131,19 @@ def month_boxoffice(date=None, retry_count=3, pause=0.001):
               releaseTime   上映日期
     """
     if date is None:
-        date = du.day_last_week(-30)[0:7] 
-    elif len(date)>8:
+        date = du.day_last_week(-30)[0:7]
+    elif len(date) > 8:
         print(ct.BOX_INPUT_ERR_MSG)
         return
     date += '-01'
     for _ in range(retry_count):
         time.sleep(pause)
         try:
-            request = Request(ct.BOXOFFICE_MONTH%(ct.P_TYPE['http'], ct.DOMAINS['mbox'],
-                              ct.BOX, date))
-            lines = urlopen(request, timeout = 10).read()
-            if len(lines) < 15: #no data
+            request = Request(ct.BOXOFFICE_MONTH %
+                              (ct.P_TYPE['http'], ct.DOMAINS['mbox'], ct.BOX,
+                               date))
+            lines = urlopen(request, timeout=10).read()
+            if len(lines) < 15:  #no data
                 return None
         except Exception as e:
             print(e)
@@ -176,8 +182,7 @@ def day_cinema(date=None, retry_count=3, pause=0.001):
     data = pd.DataFrame()
     ct._write_head()
     for x in range(1, 11):
-        df = _day_cinema(date, x, retry_count,
-                                       pause)
+        df = _day_cinema(date, x, retry_count, pause)
         if df is not None:
             data = pd.concat([data, df])
     data = data.drop_duplicates()
@@ -189,10 +194,11 @@ def _day_cinema(date=None, pNo=1, retry_count=3, pause=0.001):
     for _ in range(retry_count):
         time.sleep(pause)
         try:
-            request = Request(ct.BOXOFFICE_CBD%(ct.P_TYPE['http'], ct.DOMAINS['mbox'],
-                              ct.BOX, pNo, date))
-            lines = urlopen(request, timeout = 10).read()
-            if len(lines) < 15: #no data
+            request = Request(ct.BOXOFFICE_CBD %
+                              (ct.P_TYPE['http'], ct.DOMAINS['mbox'], ct.BOX,
+                               pNo, date))
+            lines = urlopen(request, timeout=10).read()
+            if len(lines) < 15:  #no data
                 return None
         except Exception as e:
             print(e)
@@ -205,6 +211,6 @@ def _day_cinema(date=None, pNo=1, retry_count=3, pause=0.001):
 
 def _random(n=13):
     from random import randint
-    start = 10**(n-1)
-    end = (10**n)-1
+    start = 10**(n - 1)
+    end = (10**n) - 1
     return str(randint(start, end))

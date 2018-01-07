@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*- 
+# -*- coding:utf-8 -*-
 """
 通联数据
 Created on 2015/08/24
@@ -19,4 +19,3 @@ from tushare.datayes.options import Options
 from tushare.datayes.market import Market
 from tushare.datayes.subject import Subject
 from tushare.datayes.IV import IV
-    

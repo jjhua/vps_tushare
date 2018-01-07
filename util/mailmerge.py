@@ -33,11 +33,13 @@ class MailMerge(object):
             if type in CONTENT_TYPES_PARTS:
                 zi, self.parts[zi] = self.__get_tree_of_file(file)
             elif type == CONTENT_TYPE_SETTINGS:
-                self._settings_info, self.settings = self.__get_tree_of_file(file)
+                self._settings_info, self.settings = self.__get_tree_of_file(
+                    file)
 
         to_delete = []
 
-        r = re.compile(r' MERGEFIELD +"?([^ ]+?)"? +(|\\\* MERGEFORMAT )', re.I)
+        r = re.compile(r' MERGEFIELD +"?([^ ]+?)"? +(|\\\* MERGEFORMAT )',
+                       re.I)
         for part in self.parts.values():
 
             for parent in part.findall('.//{%(w)s}fldSimple/..' % NAMESPACES):
@@ -51,16 +53,24 @@ class MailMerge(object):
                         continue
                     parent[idx] = Element('MergeField', name=m.group(1))
 
-            for parent in part.findall('.//{%(w)s}instrText/../..' % NAMESPACES):
+            for parent in part.findall(
+                    './/{%(w)s}instrText/../..' % NAMESPACES):
                 children = list(parent)
-                fields = zip(
-                    [children.index(e) for e in
-                     parent.findall('{%(w)s}r/{%(w)s}fldChar[@{%(w)s}fldCharType="begin"]/..' % NAMESPACES)],
-                    [children.index(e) for e in
-                     parent.findall('{%(w)s}r/{%(w)s}fldChar[@{%(w)s}fldCharType="end"]/..' % NAMESPACES)],
-                    [e for e in
-                     parent.findall('{%(w)s}r/{%(w)s}instrText' % NAMESPACES)]
-                )
+                fields = zip([
+                    children.index(e)
+                    for e in parent.findall(
+                        '{%(w)s}r/{%(w)s}fldChar[@{%(w)s}fldCharType="begin"]/..'
+                        % NAMESPACES)
+                ], [
+                    children.index(e)
+                    for e in parent.findall(
+                        '{%(w)s}r/{%(w)s}fldChar[@{%(w)s}fldCharType="end"]/..'
+                        % NAMESPACES)
+                ], [
+                    e
+                    for e in parent.findall(
+                        '{%(w)s}r/{%(w)s}instrText' % NAMESPACES)
+                ])
 
                 for idx_begin, idx_end, instr in fields:
                     m = r.match(instr.text)
@@ -213,6 +223,7 @@ class MailMerge(object):
         for part in parts:
             for table in part.findall('.//{%(w)s}tbl' % NAMESPACES):
                 for idx, row in enumerate(table):
-                    if row.find('.//MergeField[@name="%s"]' % field) is not None:
+                    if row.find(
+                            './/MergeField[@name="%s"]' % field) is not None:
                         return table, idx, row
         return None, None, None
