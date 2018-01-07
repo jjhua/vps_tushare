@@ -48,7 +48,7 @@ def get_latest_news(top=None, show_content=False):
                                                    _random()))
         data_str = urlopen(request, timeout=10).read()
         data_str = data_str.decode('GBK')
-        data_str = data_str.split('=')[1][:-1]
+        data_str = data_str[data_str.find("=")+1:-1]
         data_str = eval(data_str, type('Dummy', (dict,), 
                                        dict(__getitem__ = lambda s, n:n))())
         data_str = json.dumps(data_str)

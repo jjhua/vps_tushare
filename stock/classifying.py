@@ -163,7 +163,7 @@ def _get_detail(tag, retry_count=3, pause=1):
             resp=requests.get(url)
             resp.encoding="utf-8"
             text=resp.text
-        except _network_error_classes:
+        except:
             pass
         else:
             reg = re.compile(r'\,(.*?)\:')
