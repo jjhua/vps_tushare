@@ -69,18 +69,21 @@ def get_concept_classified():
         name :股票名称
         c_name :概念名称
     """
-    ct._write_head()
-    df = _get_type_data(ct.SINA_CONCEPTS_INDEX_URL %
-                        (ct.P_TYPE['http'], ct.DOMAINS['sf'], ct.PAGES['cpt']))
-    data = []
-    name_list = df.values
-    for row in df.values:
-        rowDf = _get_detail(row[0])
-        if rowDf is not None:
-            rowDf['c_name'] = row[1]
-            data.append(rowDf)
-    if data is not None:
-        data = pd.concat(data, ignore_index=True)
+    try:
+        ct._write_head()
+        df = _get_type_data(ct.SINA_CONCEPTS_INDEX_URL %
+                            (ct.P_TYPE['http'], ct.DOMAINS['sf'], ct.PAGES['cpt']))
+        data = []
+        name_list = df.values
+        for row in df.values:
+            rowDf = _get_detail(row[0],pause=0.1)
+            if rowDf is not None:
+                rowDf['c_name'] = row[1]
+                data.append(rowDf)
+        if len(data)>0:
+            data = pd.concat(data, ignore_index=True)
+    except:
+        print(traceback.format_exec())
     return data, name_list
 
 
@@ -152,11 +155,11 @@ def get_st_classified():
     return df
 
 
-def _get_detail(tag, retry_count=3, pause=1):
+def _get_detail(tag, retry_count=3, pause=0.3):
     for _ in range(retry_count):
         time.sleep(pause)
         try:
-            print("_get_detail")
+            print(tag)
             # ct._write_console()
             url = ct.SINA_DATA_DETAIL_URL % (ct.P_TYPE['http'],
                                              ct.DOMAINS['vsf'], ct.PAGES['jv'],
@@ -167,6 +170,8 @@ def _get_detail(tag, retry_count=3, pause=1):
             #text = urlopen(request, timeout=10).read()
             #text = text.decode('gbk')
             resp = requests.get(url)
+            if resp.ok:
+                continue
             resp.encoding = "gbk"
             text = resp.text
             reg = re.compile(r'\,(.*?)\:')
@@ -189,8 +194,8 @@ def _get_detail(tag, retry_count=3, pause=1):
 
 def _get_type_data(url):
     try:
-        resp=requests.get(url)
-        resp.encoding='gbk'
+        resp = requests.get(url)
+        resp.encoding = 'gbk'
         #request = Request(url)
         data_str = resp.text
         #data_str = data_str.decode('GBK')
